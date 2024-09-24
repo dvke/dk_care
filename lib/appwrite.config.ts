@@ -3,7 +3,7 @@ import * as sdk from "node-appwrite";
 export const {
   PROJECT_ID,
   API_KEY,
-  DATABSE_ID,
+  DATABASE_ID,
   PATIENT_COLLECTION_ID,
   DOCTOR_COLLECTION_ID,
   APPOINTMENT_COLLECTION_ID,
