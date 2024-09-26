@@ -1,25 +1,14 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { createUser } from "@/lib/actions/patient.actions";
+import { UserFormValidation } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "../ui/button";
 import CustomFormField from "../CustomFormField";
 import SubmitButton from "../SubmitButton";
-import { useState } from "react";
-import { UserFormValidation } from "@/lib/validation";
-import { useRouter } from "next/navigation";
-import { createUser } from "@/lib/actions/patient.actions";
-import { Patient } from "@/types/appwrite.types";
 
 export enum FormFieldType {
   INPUT = "input",
