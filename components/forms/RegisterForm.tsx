@@ -1,29 +1,29 @@
 "use client";
 import { Form, FormControl } from "@/components/ui/form";
-import { createUser } from "@/lib/actions/patient.actions";
-import { UserFormValidation } from "@/lib/validation";
+import { Doctors, GenderOptions, IdentificationTypes } from "@/constants";
+import { registerPatient } from "@/lib/actions/patient.actions";
+import { PatientFormValidation } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import CustomFormField from "../CustomFormField";
-import SubmitButton from "../SubmitButton";
-import { FormFieldType } from "./PatientForm";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Label } from "../ui/label";
-import { Doctors, GenderOptions, IdentificationTypes } from "@/constants";
-import Image from "next/image";
-import { SelectItem } from "../ui/select";
 import FileUploader from "../FileUploader";
+import SubmitButton from "../SubmitButton";
+import { Label } from "../ui/label";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { SelectItem } from "../ui/select";
+import { FormFieldType } from "./PatientForm";
 
 const RegisterForm = ({ user }: { user: User }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   // 1. Define your form.
-  const form = useForm<z.infer<typeof UserFormValidation>>({
-    resolver: zodResolver(UserFormValidation),
+  const form = useForm<z.infer<typeof PatientFormValidation>>({
+    resolver: zodResolver(PatientFormValidation),
     defaultValues: {
       name: "",
       email: "",
@@ -31,25 +31,44 @@ const RegisterForm = ({ user }: { user: User }) => {
     },
   });
 
+  useEffect(() => {
+    console.log(form.formState.errors);
+  }, [form.formState.errors]);
+
   // 2. Define a submit handler.
-  const onSubmit = async ({
-    name,
-    email,
-    phone,
-  }: z.infer<typeof UserFormValidation>) => {
+  const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
     setIsLoading(true);
 
+    let formData;
+
+    if (
+      values.identificationDocument &&
+      values.identificationDocument.length > 0
+    ) {
+      const blobFile = new Blob([values.identificationDocument[0]], {
+        type: values.identificationDocument[0].type,
+      });
+
+      formData = new FormData();
+      formData.append("blobFile", blobFile);
+      formData.append("fileName", values.identificationDocument[0].name);
+    }
     try {
-      const userData = {
-        name,
-        email,
-        phone,
+      const patientData = {
+        ...values,
+        userId: user.$id,
+        birthDate: new Date(values.birthDate),
+        identificationDocument: formData,
       };
-      const user = await createUser(userData);
-      if (user) router.push(`/patients/${user.$id}/register`);
+      // @ts-ignore
+      const newPatient = await registerPatient(patientData);
+
+      if (newPatient) router.push(`/patients/${user.$id}/new-appointment`);
     } catch (error) {
       console.log(error);
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -68,6 +87,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             <h2 className="sub-header">Personal Information</h2>
           </div>
         </section>
+        {/* Name */}
         <CustomFormField
           control={form.control}
           fieldType={FormFieldType.INPUT}
@@ -77,7 +97,7 @@ const RegisterForm = ({ user }: { user: User }) => {
           iconSrc="/assets/icons/user.svg"
           iconAlt="user"
         />
-
+        {/* Email & phone */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -97,7 +117,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             placeholder="555 123 4567"
           />
         </div>
-
+        {/* Birthdate & gender */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -131,7 +151,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             )}
           />
         </div>
-
+        {/* Address and occupation */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -149,7 +169,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             placeholder="eg: Software Engineer"
           />
         </div>
-
+        {/* Emergency contact */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -174,7 +194,7 @@ const RegisterForm = ({ user }: { user: User }) => {
           </div>
         </section>
 
-        {/* Physician select */}
+        {/* Physician */}
         <CustomFormField
           control={form.control}
           fieldType={FormFieldType.SELECT}
@@ -201,7 +221,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             </SelectItem>
           ))}
         </CustomFormField>
-
+        {/* Insurance data */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -214,11 +234,12 @@ const RegisterForm = ({ user }: { user: User }) => {
           <CustomFormField
             control={form.control}
             fieldType={FormFieldType.INPUT}
-            name="inusrancePolicyNumber"
+            name="insurancePolicyNumber"
             label="Insurance policy number"
             placeholder="eg: 123456789"
           />
         </div>
+        {/* allergies and meds */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -236,7 +257,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             placeholder="Current medication"
           />
         </div>
-
+        {/* med history */}
         <div className="flex flex-col gap-6 xl:flex-row">
           <CustomFormField
             control={form.control}
@@ -305,7 +326,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             <h2 className="sub-header">Consent & Privacy</h2>
           </div>
         </section>
-
+        {/* agreements */}
         <CustomFormField
           fieldType={FormFieldType.CHECKBOX}
           control={form.control}
