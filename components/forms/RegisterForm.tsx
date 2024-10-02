@@ -31,6 +31,8 @@ const RegisterForm = ({ user }: { user: User }) => {
     },
   });
 
+  console.log(user);
+
   useEffect(() => {
     console.log(form.formState.errors);
   }, [form.formState.errors]);
@@ -78,7 +80,7 @@ const RegisterForm = ({ user }: { user: User }) => {
         className="space-y-12 flex-1"
       >
         <section className="space-y-4">
-          <h1 className="header">Welcome👋</h1>
+          <h1 className="header">Welcome👋 {user.name.split(" ")[0]}</h1>
           <p className="text-dark-700">Let us know more about yourself.</p>
         </section>
 
